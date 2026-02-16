@@ -276,14 +276,14 @@ non-nil."
                  ((nbutlast tree) nil))
          (catch 'found
            (dolist (sub tree)
-             (when-let ((found (auto-compile--tree-member elt sub delete)))
+             (when-let* ((found (auto-compile--tree-member elt sub delete)))
                (throw 'found found)))))))
 
 (defun auto-compile-modify-mode-line (after)
   (let ((format (default-value 'mode-line-format)))
     (auto-compile--tree-member 'mode-line-auto-compile format 'delete)
     (when after
-      (if-let ((mem (auto-compile--tree-member after format)))
+      (if-let* ((mem (auto-compile--tree-member after format)))
           (push 'mode-line-auto-compile (cdr mem))
         (message "Could not insert `%s' into `%s'"
                  'mode-line-auto-compile
