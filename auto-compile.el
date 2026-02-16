@@ -129,6 +129,13 @@
 
 (defvar warning-minimum-level)
 
+(defmacro auto-compile--static-if (condition then-form &rest else-forms)
+  (declare (indent 2)
+           (debug (sexp sexp &rest sexp)))
+  (if (eval condition lexical-binding)
+      then-form
+    (cons 'progn else-forms)))
+
 (defgroup auto-compile nil
   "Automatically compile Emacs Lisp source libraries."
   :group 'convenience
@@ -500,21 +507,20 @@ Optionally that suffix may be followed by one listed in
   (string-match-p (format "\\.el%s\\'" (regexp-opt load-file-rep-suffixes))
                   file))
 
-(cl-eval-when (compile load eval)
-  (if (fboundp 'file-name-with-extension)
-      ;; Added in Emacs 28.1.
-      (defalias 'auto-compile--file-name-with-extension
-        #'file-name-with-extension)
-    (defun auto-compile--file-name-with-extension (filename extension)
-      (let ((extn (string-trim-left extension "[.]")))
-        (cond ((string-empty-p filename)
-               (error "Empty filename"))
-              ((string-empty-p extn)
-               (error "Malformed extension: %s" extension))
-              ((directory-name-p filename)
-               (error "Filename is a directory: %s" filename))
-              (t
-               (concat (file-name-sans-extension filename) "." extn)))))))
+(static-if (fboundp 'file-name-with-extension)
+    ;; Added in Emacs 28.1.
+    (defalias 'auto-compile--file-name-with-extension
+      #'file-name-with-extension)
+  (defun auto-compile--file-name-with-extension (filename extension)
+    (let ((extn (string-trim-left extension "[.]")))
+      (cond ((string-empty-p filename)
+             (error "Empty filename"))
+            ((string-empty-p extn)
+             (error "Malformed extension: %s" extension))
+            ((directory-name-p filename)
+             (error "Filename is a directory: %s" filename))
+            (t
+             (concat (file-name-sans-extension filename) "." extn))))))
 
 (defun auto-compile--byte-compile-source-file (file &optional must-exist)
   (let ((standard (auto-compile--file-name-with-extension
