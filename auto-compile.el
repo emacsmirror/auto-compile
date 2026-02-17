@@ -875,7 +875,7 @@ Without this advice the outdated source file would get loaded."
 (when (fboundp 'setopt) ; since Emacs 29.1
   (with-no-warnings
     (defun auto-compile-use-mode-line-set (_ignored value)
-      (declare (obsolete "use `setopt' instead." "Auto-Compile 2.2.0"))
+      (declare (obsolete "use `setopt' instead." "Auto-Compile 2.1.2"))
       (setopt auto-compile-use-mode-line value))))
 
 (provide 'auto-compile)
