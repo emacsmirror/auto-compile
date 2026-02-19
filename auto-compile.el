@@ -507,7 +507,7 @@ Optionally that suffix may be followed by one listed in
   (string-match-p (format "\\.el%s\\'" (regexp-opt load-file-rep-suffixes))
                   file))
 
-(static-if (fboundp 'file-name-with-extension)
+(auto-compile--static-if (fboundp 'file-name-with-extension)
     ;; Added in Emacs 28.1.
     (defalias 'auto-compile--file-name-with-extension
       #'file-name-with-extension)
@@ -872,7 +872,7 @@ Without this advice the outdated source file would get loaded."
 
 ;;; _
 
-(static-if (fboundp 'setopt) ; since Emacs 29.1
+(auto-compile--static-if (fboundp 'setopt) ; since Emacs 29.1
     (defun auto-compile-use-mode-line-set (_ignored value)
       (declare (obsolete "use `setopt' instead." "Auto-Compile 2.1.2"))
       (setopt auto-compile-use-mode-line value)))
