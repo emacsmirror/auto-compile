@@ -7,7 +7,7 @@
 ;; Keywords: compile convenience lisp
 
 ;; Package-Version: 2.1.3
-;; Package-Requires: ((emacs "27.1"))
+;; Package-Requires: ((emacs "28.1"))
 
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -507,24 +507,9 @@ Optionally that suffix may be followed by one listed in
   (string-match-p (format "\\.el%s\\'" (regexp-opt load-file-rep-suffixes))
                   file))
 
-(auto-compile--static-if (fboundp 'file-name-with-extension)
-    ;; Added in Emacs 28.1.
-    (defalias 'auto-compile--file-name-with-extension
-      #'file-name-with-extension)
-  (defun auto-compile--file-name-with-extension (filename extension)
-    (let ((extn (string-trim-left extension "[.]")))
-      (cond ((string-empty-p filename)
-             (error "Empty filename"))
-            ((string-empty-p extn)
-             (error "Malformed extension: %s" extension))
-            ((directory-name-p filename)
-             (error "Filename is a directory: %s" filename))
-            (t
-             (concat (file-name-sans-extension filename) "." extn))))))
-
 (defun auto-compile--byte-compile-source-file (file &optional must-exist)
-  (let ((standard (auto-compile--file-name-with-extension
-                   (byte-compiler-base-file-name file) ".el"))
+  (let ((standard (file-name-with-extension (byte-compiler-base-file-name file)
+                                            ".el"))
         (suffixes load-file-rep-suffixes)
         (file nil))
     (while (and (not file) suffixes)
@@ -667,15 +652,14 @@ pretend the byte code file exists.")
     (ding)))
 
 (define-advice save-buffers-kill-emacs
-    ;; <= 28 (&optional arg); >= 29 (&optional arg restart)
-    (:around (fn &rest args) auto-compile)
+    (:around (fn &optional arg restart) auto-compile)
   "Bind `auto-compile-mark-failed-modified' to nil when killing Emacs.
 If the regular value of this variable is non-nil the user might
 still be asked whether she wants to save modified buffers, which
 she actually did already safe.  This advice ensures she at least
 is only asked once about each such file."
   (let ((auto-compile-mark-failed-modified nil))
-    (apply fn args)))
+    (funcall fn arg restart)))
 
 (define-advice save-buffers-kill-terminal
     (:around (fn &optional arg) auto-compile)
