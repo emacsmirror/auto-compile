@@ -125,7 +125,7 @@
 (require 'bytecomp)
 (require 'cl-lib)
 
-(eval-when-compile (require 'subr-x))
+(require 'subr-x) ;for if-let* et al. when using Emacs 28
 
 (defvar warning-minimum-level)
 
